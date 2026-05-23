@@ -3,7 +3,7 @@
 1. Clone the project
 
 ```
-git clone https://github.com/singhsanket143/Express-Typescript-Starter-Project.git <ProjectName>
+git clone https://github.com/Somilg11/codeduck
 ```
 
 2. Move in to the folder structure
