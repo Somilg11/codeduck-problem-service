@@ -1,0 +1,252 @@
+{
+  "info": {
+    "name": "Problem Service API",
+    "description": "Postman collection to test the Problem Service (v1).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "b5c2f5b2-0000-4000-8000-000000000001"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "problemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "searchQuery",
+      "value": "Sum",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Ping",
+      "item": [
+        {
+          "name": "Ping - root (Pong)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/ping",
+            "description": "Returns a JSON pong message"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('body contains Pong', () => pm.expect(json.message).to.eql('Pong!'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ping - health (text)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/ping/health",
+            "description": "Simple health endpoint that returns text 'OK'"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('body is OK', () => pm.expect(pm.response.text()).to.eql('OK'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Problems",
+      "item": [
+        {
+          "name": "Create Problem",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Sum Two Numbers\",\n  \"description\": \"Given two numbers, return their sum.\",\n  \"difficulty\": \"easy\",\n  \"editorial\": \"Add the two numbers.\",\n  \"testcases\": [\n    { \"input\": \"1 2\", \"output\": \"3\" },\n    { \"input\": \"5 7\", \"output\": \"12\" }\n  ]\n}",
+              "options": {}
+            },
+            "url": "{{baseUrl}}/problems"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status is 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "pm.test('success flag true', () => pm.expect(json.success).to.eql(true));",
+                  "// Save created problem id to collection variable for later requests",
+                  "if (json && json.data && json.data._id) {",
+                  "  pm.collectionVariables.set('problemId', json.data._id);",
+                  "  console.log('Saved problemId:', json.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Problems",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/problems"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('response has success true', () => pm.expect(json.success).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Problem by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/problems/{{problemId}}",
+            "description": "Requires {{problemId}} from Create Problem or set manually"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('response has success true', () => pm.expect(json.success).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Problem",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Sum Two Numbers - Updated\"\n}"
+            },
+            "url": "{{baseUrl}}/problems/{{problemId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('updated title present', () => pm.expect(json.data.title).to.eql('Sum Two Numbers - Updated'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Problem",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/problems/{{problemId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(json.success).to.eql(true));",
+                  "// Optionally clear the variable",
+                  "pm.collectionVariables.unset('problemId');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Find By Difficulty",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/problems/difficulty/easy"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(json.success).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search Problems",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/problems/search?q={{searchQuery}}",
+            "description": "Search by query string using 'q' parameter"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('status is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(json.success).to.eql(true));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
